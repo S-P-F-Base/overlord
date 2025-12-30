@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from fastapi.templating import Jinja2Templates
@@ -7,14 +8,18 @@ STATIC_DIR = BASE_DIR / "static"
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
+USE_ACCEL = os.getenv("FASTAPISTATIC") != "1"
+
 
 def static_with_version(file: str) -> str:
     static_path = STATIC_DIR / file
-    if static_path.exists():
-        v = int(static_path.stat().st_mtime)
+    v = int(static_path.stat().st_mtime) if static_path.exists() else 0
+
+    if USE_ACCEL:
         return f"/overlord/static/{file}?v={v}"
 
-    return f"/overlord/static/{file}"
+    else:
+        return f"/static/{file}?v={v}"
 
 
 templates.env.filters["ver"] = static_with_version

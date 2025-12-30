@@ -21,6 +21,16 @@ async def service_static(svc: str, path: str):
     return resp
 
 
+# Эйджкейся ибо всё это говно
+@router.get("/overlord/static/{path:path}")
+async def overlord_static(path: str):
+    safe_path = quote(path)
+
+    resp = Response(status_code=200)
+    resp.headers["X-Accel-Redirect"] = f"/__accel/overlord/{safe_path}"
+    return resp
+
+
 @router.get("/static/{path:path}")
 async def monolith_static(path: str):
     service = ServicesControl.get_by_path("/")
