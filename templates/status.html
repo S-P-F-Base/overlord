@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <title>Overlord</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ 'css/main.css' | ver }}">
+</head>
+
+<body>
+    <main class="page">
+        <header class="page-header">
+            <h1>Overlord</h1>
+            <p class="subtitle">Состояние сервисов</p>
+        </header>
+
+        <section class="services">
+            {% for svc in services %}
+            <article class="service-row status-{{ svc.status.class }}">
+                <div class="svc-main">
+                    <div class="svc-top">
+                        <div class="svc-name">{{ svc.name }}</div>
+
+                        {% if svc.public %}
+                        <div class="svc-route">{{ svc.path }}</div>
+                        {% else %}
+                        <div class="svc-route svc-route--internal">Внутренний сервис</div>
+                        {% endif %}
+                    </div>
+
+                    {% if svc.reason %}
+                    <div class="svc-reason">{{ svc.reason }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="svc-status {{ svc.status.class }}">
+                    {{ svc.status.text }}
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+:root {
+    --bg: #0e0e0e;
+    --card-top: #1a1a1a;
+    --card-bottom: #141414;
+    --border: #ff9800;
+    --text: #ffffff;
+    --muted: #9a9a9a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* Контейнер страницы ошибки */
+.error-page {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.error-card {
+    width: 100%;
+    max-width: 640px;
+    background: linear-gradient(180deg,
+            var(--card-top) 0%,
+            var(--card-bottom) 100%);
+    border-left: 4px solid var(--border);
+    padding: 1.25rem 1.4rem;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #ffb74d;
+}
+
+.code {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.description {
+    margin-top: 0.8rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.reason {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.6rem;
+    background: #101010;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #d6d6d6;
+    overflow-wrap: anywhere;
+}
+
+.service {
+    margin-top: 0.7rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+/* Мобильная подстройка */
+@media (max-width: 480px) {
+    .error-card {
+        padding: 1rem 1.1rem;
+    }
+
+    h1 {
+        font-size: 1.05rem;
+    }
+
+    .description {
+        font-size: 0.9rem;
+    }
+}

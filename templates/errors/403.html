@@ -1,0 +1,25 @@
+{% extends "errors/base.html" %}
+
+{% block content %}
+<h1>Доступ запрещён</h1>
+
+<div class="code">
+    HTTP 403 · Forbidden
+</div>
+
+<p class="description">
+    У вас нет прав для доступа к этому ресурсу.
+</p>
+
+{% if reason %}
+<div class="reason">
+    {{ reason }}
+</div>
+{% endif %}
+
+{% if service %}
+<div class="service">
+    Сервис: {{ service.name if service.name is defined else service }}
+</div>
+{% endif %}
+{% endblock %}

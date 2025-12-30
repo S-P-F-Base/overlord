@@ -1,0 +1,19 @@
+{% extends "errors/base.html" %}
+
+{% block content %}
+<h1>Ресурс не найден</h1>
+
+<div class="code">
+    HTTP 404 · Not Found
+</div>
+
+<p class="description">
+    Запрошенный ресурс не существует или недоступен.
+</p>
+
+{% if service %}
+<div class="service">
+    Сервис: {{ service.name if service.name is defined else service }}
+</div>
+{% endif %}
+{% endblock %}

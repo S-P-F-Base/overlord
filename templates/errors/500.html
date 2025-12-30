@@ -1,0 +1,25 @@
+{% extends "errors/base.html" %}
+
+{% block content %}
+<h1>Внутренняя ошибка сервиса</h1>
+
+<div class="code">
+    HTTP 500 · Internal Server Error
+</div>
+
+<p class="description">
+    Произошла ошибка при обработке запроса во внутреннем сервисе.
+</p>
+
+{% if reason %}
+<div class="reason">
+    {{ reason }}
+</div>
+{% endif %}
+
+{% if service %}
+<div class="service">
+    Сервис: {{ service.name if service.name is defined else service }}
+</div>
+{% endif %}
+{% endblock %}

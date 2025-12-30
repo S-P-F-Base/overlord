@@ -1,0 +1,25 @@
+{% extends "errors/base.html" %}
+
+{% block content %}
+<h1>Сервис временно недоступен</h1>
+
+<div class="code">
+    HTTP 502 · Bad Gateway
+</div>
+
+<p class="description">
+    Не удалось получить корректный ответ от внутреннего сервиса.
+</p>
+
+{% if reason %}
+<div class="reason">
+    {{ reason }}
+</div>
+{% endif %}
+
+{% if service %}
+<div class="service">
+    Сервис: {{ service.name if service.name is defined else service }}
+</div>
+{% endif %}
+{% endblock %}
