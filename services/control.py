@@ -37,13 +37,17 @@ class ServicesControl:
         if not full_path.startswith("/"):
             full_path = "/" + full_path
 
-        for svc in sorted(cls._services, key=lambda s: len(s["path"]), reverse=True):
+        for svc in cls._services:
             base = svc["path"]
 
-            if full_path == base:
+            if base == "/":
+                continue
+
+            if full_path == base or full_path.startswith(base + "/"):
                 return svc
 
-            if full_path.startswith(base + "/"):
+        for svc in cls._services:
+            if svc["path"] == "/":
                 return svc
 
         return None
