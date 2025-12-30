@@ -1,7 +1,10 @@
+import time
+
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Response
 
 from services import ServicesControl
+from services.types import ServiceStatus
 from template_env import templates
 
 router = APIRouter()
@@ -26,6 +29,7 @@ def wants_html(request: Request) -> bool:
 async def forward_request(
     request: Request,
     *,
+    service,
     host: str,
     port: int,
     timeout: float = 5.0,
@@ -40,6 +44,12 @@ async def forward_request(
         k: v for k, v in request.headers.items() if k.lower() not in HOP_BY_HOP_HEADERS
     }
 
+    if request.client:
+        headers["x-forwarded-for"] = request.client.host
+        headers["x-real-ip"] = request.client.host
+
+    start = time.monotonic()
+
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             upstream_resp = await client.request(
@@ -49,23 +59,37 @@ async def forward_request(
                 headers=headers,
             )
 
-    except httpx.ConnectError:
-        raise HTTPException(
-            status_code=502,
-            detail="Сервис недоступен",
+        latency = time.monotonic() - start
+
+        ServicesControl.update_status(
+            service,
+            status=ServiceStatus.HEALTHY,
+            latency=latency,
         )
+
+    except httpx.ConnectError:
+        ServicesControl.update_status(
+            service,
+            status=ServiceStatus.UNHEALTHY,
+            reason="connect error",
+        )
+        raise HTTPException(502, "Сервис недоступен")
 
     except httpx.TimeoutException:
-        raise HTTPException(
-            status_code=504,
-            detail="Сервис не ответил вовремя",
+        ServicesControl.update_status(
+            service,
+            status=ServiceStatus.TIMEOUT,
+            reason="timeout",
         )
+        raise HTTPException(504, "Сервис не ответил вовремя")
 
     except httpx.HTTPError:
-        raise HTTPException(
-            status_code=502,
-            detail="Получен некорректный ответ от сервиса",
+        ServicesControl.update_status(
+            service,
+            status=ServiceStatus.UNHEALTHY,
+            reason="http error",
         )
+        raise HTTPException(502, "Получен некорректный ответ от сервиса")
 
     response_headers = {
         k: v
@@ -92,6 +116,7 @@ async def proxy(full_path: str, request: Request):
     try:
         upstream_resp, resp = await forward_request(
             request,
+            service=service,
             host="127.0.0.1",
             port=service["port"],
         )
@@ -112,6 +137,9 @@ async def proxy(full_path: str, request: Request):
     upstream_ct = upstream_resp.headers.get("content-type", "")
 
     if upstream_ct.startswith("application/json"):
+        return resp
+
+    if service["path"] == "/" and wants_html(request):
         return resp
 
     if wants_html(request) and resp.status_code in {403, 404, 500, 502}:

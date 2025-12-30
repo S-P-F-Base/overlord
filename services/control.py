@@ -1,4 +1,3 @@
-# services.py
 import time
 
 from .types import Service, ServiceStatus
@@ -7,9 +6,9 @@ from .types import Service, ServiceStatus
 class ServicesControl:
     _services: list[Service] = [
         {
-            "name": "Auth API",
-            "path": "/auth",
-            "port": 9101,
+            "name": "Монолитное говно",
+            "path": "/",
+            "port": 8000,
             "public": True,
             "status": None,
             "reason": None,
@@ -38,7 +37,7 @@ class ServicesControl:
         if not full_path.startswith("/"):
             full_path = "/" + full_path
 
-        for svc in cls._services:
+        for svc in sorted(cls._services, key=lambda s: len(s["path"]), reverse=True):
             base = svc["path"]
 
             if full_path == base:
