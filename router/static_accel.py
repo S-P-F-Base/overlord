@@ -17,27 +17,24 @@ async def overlord_static(path: str):
     return resp
 
 
-@router.get("/static/{path:path}")
-async def monolith_static(path: str):
-    service = ServicesControl.get_by_path("/")
-    if not service or not service["public"]:
+def accel_static(service, path: str) -> Response:
+    if not service or not service.public:
         raise HTTPException(404)
 
     safe_path = quote(path)
 
     resp = Response(status_code=200)
-    resp.headers["X-Accel-Redirect"] = f"/__accel/monolith/{safe_path}"
+    resp.headers["X-Accel-Redirect"] = f"/__accel/{service.id}/{safe_path}"
     return resp
+
+
+@router.get("/static/{path:path}")
+async def monolith_static(path: str):
+    service = ServicesControl.get_by_path("/")
+    return accel_static(service, path)
 
 
 @router.get("/{svc}/static/{path:path}")
 async def service_static(svc: str, path: str):
     service = ServicesControl.get_by_path(f"/{svc}")
-    if not service or not service["public"]:
-        raise HTTPException(404)
-
-    safe_path = quote(path)
-
-    resp = Response(status_code=200)
-    resp.headers["X-Accel-Redirect"] = f"/__accel/{svc}/{safe_path}"
-    return resp
+    return accel_static(service, path)

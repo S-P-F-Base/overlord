@@ -15,7 +15,7 @@ async def poll_services() -> None:
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         while True:
             for svc in ServicesControl.get_all_services():
-                url = f"http://127.0.0.1:{svc['port']}/ping"
+                url = f"http://127.0.0.1:{svc.port}/ping"
                 start = time.monotonic()
 
                 try:

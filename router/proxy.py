@@ -3,7 +3,7 @@ import time
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Response
 
-from services import ServicesControl
+from services import Service, ServicesControl
 from services.types import ServiceStatus
 from template_env import templates
 
@@ -22,19 +22,15 @@ HOP_BY_HOP_HEADERS: set[str] = {
 
 
 def wants_html(request: Request) -> bool:
-    accept = request.headers.get("accept", "")
-    return "text/html" in accept.lower()
+    return "text/html" in request.headers.get("accept", "")
 
 
 async def forward_request(
     request: Request,
-    *,
-    service,
-    host: str,
-    port: int,
+    service: Service,
     timeout: float = 5.0,
 ) -> tuple[httpx.Response, Response]:
-    url = f"http://{host}:{port}{request.url.path}"
+    url = f"http://127.0.0.1:{service.port}{request.url.path}"
     if request.url.query:
         url += f"?{request.url.query}"
 
@@ -109,20 +105,20 @@ async def forward_request(
 
 @router.api_route("/{full_path:path}", methods=["GET", "POST"])
 async def proxy(full_path: str, request: Request):
-    service = ServicesControl.match(f"/{full_path}")
-    if not service or not service["public"]:
-        raise HTTPException(404)
+    service = ServicesControl.match("/" + full_path)
+    if service is None or not service.public:
+        raise HTTPException(status_code=404)
+
+    is_wants_html = wants_html(request)
 
     try:
         upstream_resp, resp = await forward_request(
             request,
             service=service,
-            host="127.0.0.1",
-            port=service["port"],
         )
 
     except HTTPException as exc:
-        if wants_html(request):
+        if is_wants_html:
             return templates.TemplateResponse(
                 f"errors/{exc.status_code}.html",
                 {
@@ -139,10 +135,10 @@ async def proxy(full_path: str, request: Request):
     if upstream_ct.startswith("application/json"):
         return resp
 
-    if service["path"] == "/" and wants_html(request):
+    if service.id == "monolith" and is_wants_html:
         return resp
 
-    if wants_html(request) and resp.status_code in {403, 404, 500, 502}:
+    if is_wants_html and resp.status_code in {403, 404, 500, 502}:
         reason = None
 
         try:

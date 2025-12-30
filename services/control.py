@@ -5,16 +5,7 @@ from .types import Service, ServiceStatus
 
 class ServicesControl:
     _services: list[Service] = [
-        {
-            "name": "Монолитное говно",
-            "path": "/",
-            "port": 8000,
-            "public": True,
-            "status": None,
-            "reason": None,
-            "last_check": None,
-            "latency": None,
-        },
+        Service("monolith", "Гиганский шкаф", "/", 8000, True),
     ]
 
     @classmethod
@@ -27,27 +18,22 @@ class ServicesControl:
             return None
 
         for svc in cls._services:
-            if svc["path"] == path:
+            if svc.path == path:
                 return svc
 
         return None
 
     @classmethod
-    def match(cls, full_path: str) -> Service | None:
-        if not full_path.startswith("/"):
-            full_path = "/" + full_path
+    def match(cls, request_path: str) -> Service | None:
+        if not request_path.startswith("/"):
+            request_path = "/" + request_path
 
         for svc in cls._services:
-            base = svc["path"]
-
-            if base == "/":
-                continue
-
-            if full_path == base or full_path.startswith(base + "/"):
+            if svc.path != "/" and svc.matches(request_path):
                 return svc
 
         for svc in cls._services:
-            if svc["path"] == "/":
+            if svc.path == "/":
                 return svc
 
         return None
@@ -61,7 +47,7 @@ class ServicesControl:
         reason: str | None = None,
         latency: float | None = None,
     ) -> None:
-        svc["status"] = status
-        svc["reason"] = reason
-        svc["latency"] = latency
-        svc["last_check"] = time.time()
+        svc.status = status
+        svc.reason = reason
+        svc.latency = latency
+        svc.last_check = time.time()

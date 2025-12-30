@@ -1,5 +1,5 @@
+from dataclasses import dataclass
 from enum import Enum
-from typing import TypedDict
 
 
 class ServiceStatus(Enum):
@@ -8,14 +8,21 @@ class ServiceStatus(Enum):
     UNHEALTHY = 3  # системд ответил, но не /ping
 
 
-class Service(TypedDict):
+@dataclass(slots=True)
+class Service:
+    id: str
     name: str
     path: str
     port: int
     public: bool
 
-    status: ServiceStatus | None
-    reason: str | None
+    status: ServiceStatus | None = None
+    reason: str | None = None
+    last_check: float | None = None
+    latency: float | None = None
 
-    last_check: float | None
-    latency: float | None
+    def matches(self, request_path: str) -> bool:
+        if self.path == "/":
+            return True
+
+        return request_path == self.path or request_path.startswith(self.path + "/")

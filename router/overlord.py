@@ -24,11 +24,11 @@ def status_to_view(status: ServiceStatus | None) -> dict:
 async def overlord_page(request: Request):
     services_view = [
         {
-            "name": s["name"],
-            "path": s["path"],
-            "public": s["public"],
-            "status": status_to_view(s.get("status")),
-            "reason": s.get("reason"),
+            "name": s.name,
+            "path": s.path,
+            "public": s.public,
+            "status": status_to_view(s.status),
+            "reason": s.reason,
         }
         for s in ServicesControl.get_all_services()
     ]
