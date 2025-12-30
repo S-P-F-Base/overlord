@@ -12,8 +12,9 @@ def static_with_version(file: str) -> str:
     static_path = STATIC_DIR / file
     if static_path.exists():
         v = int(static_path.stat().st_mtime)
-        return f"/static/{file}?v={v}"
-    return f"/static/{file}"
+        return f"/overlord/static/{file}?v={v}"
+
+    return f"/overlord/static/{file}"
 
 
 templates.env.filters["ver"] = static_with_version
