@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
@@ -12,6 +14,21 @@ async def service_static(svc: str, path: str):
     if not service or not service["public"]:
         raise HTTPException(404)
 
+    safe_path = quote(path)
+
     resp = Response(status_code=200)
-    resp.headers["X-Accel-Redirect"] = f"/__accel/{svc}/{path}"
+    resp.headers["X-Accel-Redirect"] = f"/__accel/{svc}/{safe_path}"
+    return resp
+
+
+@router.get("/static/{path:path}")
+async def monolith_static(path: str):
+    service = ServicesControl.get_by_path("/")
+    if not service or not service["public"]:
+        raise HTTPException(404)
+
+    safe_path = quote(path)
+
+    resp = Response(status_code=200)
+    resp.headers["X-Accel-Redirect"] = f"/__accel/monolith/{safe_path}"
     return resp
