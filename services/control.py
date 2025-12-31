@@ -1,12 +1,27 @@
 import time
+from pathlib import Path
 
 from .types import Service, ServiceStatus
 
 
 class ServicesControl:
     _services: list[Service] = [
-        Service("game_api", "Игровой API", "/game", 9101, True),
-        Service("monolith", "Гиганский шкаф", "/", 8000, True),
+        Service(
+            "game_api",
+            "Игровой API",
+            "/game",
+            9101,
+            True,
+            Path("/root/spf/game-api/MAINTENANCE"),
+        ),
+        Service(
+            "monolith",
+            "Гиганский шкаф",
+            "/",
+            8000,
+            True,
+            Path("/root/server-spf/MAINTENANCE"),
+        ),
     ]
 
     @classmethod

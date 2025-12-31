@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 
 
 class ServiceStatus(Enum):
-    TIMEOUT = 1  # за 5 секунд сервис не ответил
-    HEALTHY = 2  # системд и /ping ответили нормально
-    UNHEALTHY = 3  # системд ответил, но не /ping
+    MAINTENANCE = 0  # сервис в техобслуживании
+    TIMEOUT = 1  # за N секунд не ответил
+    HEALTHY = 2  # systemd + /ping ок
+    UNHEALTHY = 3  # systemd жив, /ping плохой
+    STARTING = 4  # systemd запущен, но сервис ещё поднимается
 
 
 @dataclass(slots=True)
@@ -15,6 +18,7 @@ class Service:
     path: str
     port: int
     public: bool
+    maintenance_file: Path
 
     status: ServiceStatus | None = None
     reason: str | None = None
@@ -26,3 +30,6 @@ class Service:
             return True
 
         return request_path == self.path or request_path.startswith(self.path + "/")
+
+    def is_in_maintenance(self) -> bool:
+        return self.maintenance_file.exists()

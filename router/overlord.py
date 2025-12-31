@@ -6,18 +6,13 @@ from template_env import templates
 
 router = APIRouter()
 
-
-def status_to_view(status: ServiceStatus | None) -> dict:
-    if status is ServiceStatus.HEALTHY:
-        return {"text": "ONLINE", "class": "ok"}
-
-    if status is ServiceStatus.UNHEALTHY:
-        return {"text": "OFFLINE", "class": "bad"}
-
-    if status is ServiceStatus.TIMEOUT:
-        return {"text": "TIMEOUT", "class": "warn"}
-
-    return {"text": "UNKNOWN", "class": "muted"}
+_STATUS_DICT = {
+    ServiceStatus.MAINTENANCE: {"text": "MAINTENANCE", "class": "warn"},
+    ServiceStatus.HEALTHY: {"text": "ONLINE", "class": "ok"},
+    ServiceStatus.UNHEALTHY: {"text": "OFFLINE", "class": "bad"},
+    ServiceStatus.TIMEOUT: {"text": "TIMEOUT", "class": "warn"},
+    None: {"text": "UNKNOWN", "class": "muted"},
+}
 
 
 @router.get("/overlord", response_class=HTMLResponse)
@@ -27,7 +22,7 @@ async def overlord_page(request: Request):
             "name": s.name,
             "path": s.path,
             "public": s.public,
-            "status": status_to_view(s.status),
+            "status": _STATUS_DICT.get(s.status),
             "reason": s.reason,
         }
         for s in ServicesControl.get_all_services()
