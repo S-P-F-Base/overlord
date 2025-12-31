@@ -5,6 +5,7 @@ from .types import Service, ServiceStatus
 
 class ServicesControl:
     _services: list[Service] = [
+        Service("game_api", "Игровой API", "/game", 9101, True),
         Service("monolith", "Гиганский шкаф", "/", 8000, True),
     ]
 
