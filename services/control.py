@@ -18,7 +18,7 @@ class ServicesControl:
             "wiki",
             "Википедия",
             "/wiki",
-            9101,
+            9102,
             True,
             Path("/root/spf/wiki/MAINTENANCE"),
         ),
