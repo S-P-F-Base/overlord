@@ -3,7 +3,7 @@ from pathlib import Path
 
 class ENVs:
     _data = {}
-    _env_path = Path(__file__).parent / ".env"
+    _env_path = Path(__file__).parents[1] / ".env"
 
     @classmethod
     def load(cls) -> None:

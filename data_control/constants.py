@@ -4,7 +4,7 @@ from pathlib import Path
 
 class Constants:
     _data = {}
-    _data_path = Path(__file__).parent / "constants.json"
+    _data_path = Path(__file__).parents[1] / "constants.json"
 
     @classmethod
     def load(cls) -> None:
