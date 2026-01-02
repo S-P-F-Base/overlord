@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 
@@ -19,6 +19,8 @@ class Service:
     port: int
     public: bool
     maintenance_file: Path
+
+    env_vars: list[str] = field(default_factory=list)
 
     status: ServiceStatus | None = None
     reason: str | None = None

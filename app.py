@@ -5,6 +5,7 @@ import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from router.internal import router as internal_router
 from router.overlord import router as overlord_router
 from router.proxy import router as proxy_router
 from router.static_accel import router as static_accel_router
@@ -39,5 +40,6 @@ if os.getenv("FASTAPISTATIC") == "1":
     )
 
 app.include_router(overlord_router)
+app.include_router(internal_router)
 app.include_router(static_accel_router)
 app.include_router(proxy_router)

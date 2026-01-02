@@ -7,28 +7,31 @@ from .types import Service, ServiceStatus
 class ServicesControl:
     _services: list[Service] = [
         Service(
-            "game_api",
-            "Игровой API",
-            "/game",
-            9101,
-            True,
-            Path("/root/spf/game-api/MAINTENANCE"),
+            id="game_api",
+            name="Игровой API",
+            path="/game",
+            port=9101,
+            public=True,
+            maintenance_file=Path("/root/spf/game-api/MAINTENANCE"),
+            env_vars=["steam_api"],
         ),
         Service(
-            "wiki",
-            "Википедия",
-            "/wiki",
-            9102,
-            True,
-            Path("/root/spf/wiki/MAINTENANCE"),
+            id="wiki",
+            name="Википедия",
+            path="/wiki",
+            port=9102,
+            public=True,
+            maintenance_file=Path("/root/spf/wiki/MAINTENANCE"),
+            env_vars=[],
         ),
         Service(
-            "monolith",
-            "Гиганский шкаф",
-            "/",
-            8000,
-            True,
-            Path("/root/server-spf/MAINTENANCE"),
+            id="monolith",
+            name="Гиганский шкаф",
+            path="/",
+            port=8000,
+            public=True,
+            maintenance_file=Path("/root/server-spf/MAINTENANCE"),
+            env_vars=[],
         ),
     ]
 
@@ -43,6 +46,14 @@ class ServicesControl:
 
         for svc in cls._services:
             if svc.path == path:
+                return svc
+
+        return None
+
+    @classmethod
+    def get_by_port(cls, port: int) -> Service | None:
+        for svc in cls._services:
+            if svc.port == port:
                 return svc
 
         return None
