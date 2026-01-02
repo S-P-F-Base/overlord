@@ -5,6 +5,7 @@ import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from data_control import Constants, ENVs
 from router.internal import router as internal_router
 from router.overlord import router as overlord_router
 from router.proxy import router as proxy_router
@@ -15,6 +16,9 @@ from services import poll_services
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
     task = asyncio.create_task(poll_services())
+
+    Constants.load()
+    ENVs.load()
 
     try:
         yield
