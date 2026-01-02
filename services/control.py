@@ -15,6 +15,14 @@ class ServicesControl:
             Path("/root/spf/game-api/MAINTENANCE"),
         ),
         Service(
+            "wiki",
+            "Википедия",
+            "/wiki",
+            9101,
+            True,
+            Path("/root/spf/wiki/MAINTENANCE"),
+        ),
+        Service(
             "monolith",
             "Гиганский шкаф",
             "/",
