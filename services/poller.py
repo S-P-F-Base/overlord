@@ -12,7 +12,12 @@ TIMEOUT = 5.0
 
 
 async def poll_services() -> None:
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+    transport = httpx.AsyncHTTPTransport(uds="/run/spf/overlord.sock")
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        timeout=TIMEOUT,
+    ) as client:
         while True:
             for svc in ServicesControl.get_all_services():
                 if svc.is_in_maintenance():
@@ -24,11 +29,10 @@ async def poll_services() -> None:
                     )
                     continue
 
-                url = f"http://127.0.0.1:{svc.port}/ping"
                 start = time.monotonic()
 
                 try:
-                    resp = await client.get(url)
+                    resp = await client.get(f"http://{svc.id}/ping")
                     latency = time.monotonic() - start
 
                     if resp.status_code == 200:
