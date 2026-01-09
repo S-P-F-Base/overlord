@@ -51,6 +51,14 @@ class ServicesControl:
         return None
 
     @classmethod
+    def get_by_id(cls, id: str) -> Service | None:
+        for svc in cls._services:
+            if svc.id == id:
+                return svc
+
+        return None
+
+    @classmethod
     def match(cls, request_path: str) -> Service | None:
         if not request_path.startswith("/"):
             request_path = "/" + request_path

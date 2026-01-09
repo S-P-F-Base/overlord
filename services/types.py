@@ -4,11 +4,15 @@ from pathlib import Path
 
 
 class ServiceStatus(Enum):
-    MAINTENANCE = 0  # сервис в техобслуживании
-    TIMEOUT = 1  # за N секунд не ответил
-    HEALTHY = 2  # systemd + /ping ок
+    HEALTHY = 0  # systemd + /ping ок
+    MAINTENANCE = 1  # сервис в техобслуживании
+    TIMEOUT = 2  # за N секунд не ответил
     UNHEALTHY = 3  # systemd жив, /ping плохой
     STARTING = 4  # systemd запущен, но сервис ещё поднимается
+
+    @property
+    def is_usable(self) -> bool:
+        return self is ServiceStatus.HEALTHY
 
 
 @dataclass(slots=True)

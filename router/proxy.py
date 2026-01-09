@@ -1,5 +1,3 @@
-import time
-
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Response
 
@@ -40,7 +38,27 @@ async def forward_request(
         headers["x-forwarded-for"] = request.client.host
         headers["x-real-ip"] = request.client.host
 
-    start = time.monotonic()
+    if service.is_in_maintenance():
+        raise HTTPException(
+            503,
+            "Сервис на тех обслуживании",
+            headers={"Retry-After": "300"},
+        )
+
+    if service.status is not ServiceStatus.HEALTHY:
+        dispatch = {
+            ServiceStatus.MAINTENANCE: (503, "Сервис на техническом обслуживании"),
+            ServiceStatus.TIMEOUT: (504, "Сервис не ответил вовремя"),
+            ServiceStatus.UNHEALTHY: (502, "Сервис недоступен"),
+            ServiceStatus.STARTING: (503, "Сервис запускается"),
+            None: (500, "Неизвестное состояние сервиса"),
+        }
+
+        code, text = dispatch.get(
+            service.status,
+            (500, "Неизвестное состояние сервиса"),
+        )
+        raise HTTPException(code, text)
 
     try:
         transport = httpx.AsyncHTTPTransport(uds=str(service.sock))
@@ -60,36 +78,13 @@ async def forward_request(
                 headers=headers,
             )
 
-        latency = time.monotonic() - start
-
-        ServicesControl.update_status(
-            service,
-            status=ServiceStatus.HEALTHY,
-            latency=latency,
-        )
-
     except httpx.ConnectError:
-        ServicesControl.update_status(
-            service,
-            status=ServiceStatus.UNHEALTHY,
-            reason="connect error",
-        )
         raise HTTPException(502, "Сервис недоступен")
 
     except httpx.TimeoutException:
-        ServicesControl.update_status(
-            service,
-            status=ServiceStatus.TIMEOUT,
-            reason="timeout",
-        )
         raise HTTPException(504, "Сервис не ответил вовремя")
 
     except httpx.HTTPError:
-        ServicesControl.update_status(
-            service,
-            status=ServiceStatus.UNHEALTHY,
-            reason="http error",
-        )
         raise HTTPException(502, "Получен некорректный ответ от сервиса")
 
     response_headers = {
@@ -123,7 +118,7 @@ async def proxy(full_path: str, request: Request):
         )
 
     except HTTPException as exc:
-        if is_wants_html:
+        if is_wants_html and exc.status_code in {403, 404, 500, 502, 503}:
             return templates.TemplateResponse(
                 f"errors/{exc.status_code}.html",
                 {
@@ -133,6 +128,7 @@ async def proxy(full_path: str, request: Request):
                 },
                 status_code=exc.status_code,
             )
+
         raise
 
     upstream_ct = upstream_resp.headers.get("content-type", "")
@@ -143,7 +139,7 @@ async def proxy(full_path: str, request: Request):
     if service.id == "monolith" and is_wants_html:
         return resp
 
-    if is_wants_html and resp.status_code in {403, 404, 500, 502}:
+    if is_wants_html and resp.status_code in {403, 404, 500, 502, 503}:
         reason = None
 
         try:

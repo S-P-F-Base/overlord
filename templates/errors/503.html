@@ -1,0 +1,26 @@
+{% extends "errors/base.html" %}
+
+{% block content %}
+<h1>Сервис временно недоступен</h1>
+
+<div class="code">
+    HTTP 503 · Service Unavailable
+</div>
+
+<p class="description">
+    Сервис временно отключён для технического обслуживания.
+    Пожалуйста, попробуйте позже.
+</p>
+
+{% if reason %}
+<div class="reason">
+    {{ reason }}
+</div>
+{% endif %}
+
+{% if service %}
+<div class="service">
+    Сервис: {{ service.name if service.name is defined else service }}
+</div>
+{% endif %}
+{% endblock %}
