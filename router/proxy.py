@@ -30,10 +30,6 @@ async def forward_request(
     service: Service,
     timeout: float = 5.0,
 ) -> tuple[httpx.Response, Response]:
-    url = f"http://127.0.0.1:{service.port}{request.url.path}"
-    if request.url.query:
-        url += f"?{request.url.query}"
-
     body = await request.body()
 
     headers = {
@@ -47,7 +43,13 @@ async def forward_request(
     start = time.monotonic()
 
     try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
+        transport = httpx.AsyncHTTPTransport(uds=str(service.sock))
+        url = f"http://{service.id}{request.url.path}"
+
+        async with httpx.AsyncClient(
+            transport=transport,
+            timeout=timeout,
+        ) as client:
             upstream_resp = await client.request(
                 method=request.method,
                 url=url,

@@ -16,7 +16,7 @@ class Service:
     id: str
     name: str
     path: str
-    port: int
+    sock: Path
     public: bool
     maintenance_file: Path
 
@@ -24,8 +24,8 @@ class Service:
 
     status: ServiceStatus | None = None
     reason: str | None = None
-    last_check: float | None = None
     latency: float | None = None
+    last_check: float | None = None
 
     def matches(self, request_path: str) -> bool:
         if self.path == "/":

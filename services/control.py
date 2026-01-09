@@ -10,7 +10,7 @@ class ServicesControl:
             id="game_api",
             name="Игровой API",
             path="/game",
-            port=9101,
+            sock=Path("/run/spf/game_api.sock"),
             public=True,
             maintenance_file=Path("/root/spf/game-api/MAINTENANCE"),
             env_vars=["steam_api"],
@@ -19,7 +19,7 @@ class ServicesControl:
             id="wiki",
             name="Википедия",
             path="/wiki",
-            port=9102,
+            sock=Path("/run/spf/wiki.sock"),
             public=True,
             maintenance_file=Path("/root/spf/wiki/MAINTENANCE"),
             env_vars=[],
@@ -28,7 +28,7 @@ class ServicesControl:
             id="monolith",
             name="Гиганский шкаф",
             path="/",
-            port=8000,
+            sock=Path("/run/spf/root.sock"),
             public=True,
             maintenance_file=Path("/root/server-spf/MAINTENANCE"),
             env_vars=[],
@@ -46,14 +46,6 @@ class ServicesControl:
 
         for svc in cls._services:
             if svc.path == path:
-                return svc
-
-        return None
-
-    @classmethod
-    def get_by_port(cls, port: int) -> Service | None:
-        for svc in cls._services:
-            if svc.port == port:
                 return svc
 
         return None
