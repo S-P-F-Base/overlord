@@ -3,7 +3,8 @@ import time
 
 import httpx
 
-from services import ServicesControl, ServiceStatus
+from services import ServicesControl
+from services.types import ServiceStatus
 
 CHECK_INTERVAL = 15.0
 TIMEOUT = 5.0
