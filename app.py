@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     task = asyncio.create_task(poll_services())
 
     Constants.load()
-    ENVs.load()
+    ENVs.generate()
 
     try:
         yield
