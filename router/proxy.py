@@ -45,6 +45,8 @@ async def forward_request(
     try:
         transport = httpx.AsyncHTTPTransport(uds=str(service.sock))
         url = f"http://{service.id}{request.url.path}"
+        if request.url.query:
+            url += f"?{request.url.query}"
 
         async with httpx.AsyncClient(
             transport=transport,
