@@ -7,15 +7,6 @@ from .types import Service, ServiceStatus
 class ServicesControl:
     _services: list[Service] = [
         Service(
-            id="game_api",
-            name="Игровой API",
-            path="/game",
-            sock=Path("/run/spf/game_api.sock"),
-            public=True,
-            maintenance_file=Path("/root/spf/game-api/MAINTENANCE"),
-            env_vars=["steam_api"],
-        ),
-        Service(
             id="wiki",
             name="Википедия",
             path="/wiki",
@@ -23,6 +14,15 @@ class ServicesControl:
             public=True,
             maintenance_file=Path("/root/spf/wiki/MAINTENANCE"),
             env_vars=[],
+        ),
+        Service(
+            id="game_api",
+            name="Игровой API",
+            path="/game",
+            sock=Path("/run/spf/game_api.sock"),
+            public=True,
+            maintenance_file=Path("/root/spf/game-api/MAINTENANCE"),
+            env_vars=["steam_api"],
         ),
         Service(
             id="users",
