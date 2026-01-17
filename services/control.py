@@ -25,12 +25,12 @@ class ServicesControl:
             env_vars=["steam_api"],
         ),
         Service(
-            id="users",
-            name="Юзер API",
-            path="/users",
-            sock=Path("/run/spf/users.sock"),
+            id="dbs",
+            name="DBs API",
+            path="/dbs",
+            sock=Path("/run/spf/dbs.sock"),
             public=False,
-            maintenance_file=Path("/root/spf/users/MAINTENANCE"),
+            maintenance_file=Path("/root/spf/dbs/MAINTENANCE"),
             env_vars=[],
         ),
         Service(
