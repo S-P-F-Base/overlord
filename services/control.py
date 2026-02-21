@@ -34,6 +34,15 @@ class ServicesControl:
             env_vars=[],
         ),
         Service(
+            id="user",
+            name="Парель игрока",
+            path="/user",
+            sock=Path("/run/spf/user.sock"),
+            public=True,
+            maintenance_file=Path("/root/spf/user/MAINTENANCE"),
+            env_vars=[],
+        ),
+        Service(
             id="monolith",
             name="Гиганский шкаф",
             path="/",
