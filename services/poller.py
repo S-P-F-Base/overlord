@@ -59,6 +59,10 @@ async def poll_services() -> None:
                 )
 
             except httpx.HTTPError as exc:
+                reason = str(exc)
+                if reason == "[Errno 2] No such file or directory":
+                    reason = "Не удалось запустить сервис"
+
                 ServicesControl.update_status(
                     svc,
                     status=ServiceStatus.UNHEALTHY,
