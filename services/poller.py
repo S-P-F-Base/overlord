@@ -1,4 +1,5 @@
 import asyncio
+import errno
 import time
 
 import httpx
@@ -50,6 +51,19 @@ async def poll_services() -> None:
                         latency=latency,
                     )
 
+            except httpx.ConnectError as exc:
+                reason = (
+                    "Не удалось запустить сервис"
+                    if getattr(exc, "errno", None) == errno.ENOENT
+                    else str(exc)
+                )
+                ServicesControl.update_status(
+                    svc,
+                    status=ServiceStatus.UNHEALTHY,
+                    reason=reason,
+                    latency=None,
+                )
+
             except httpx.TimeoutException:
                 ServicesControl.update_status(
                     svc,
@@ -59,10 +73,6 @@ async def poll_services() -> None:
                 )
 
             except httpx.HTTPError as exc:
-                reason = str(exc)
-                if reason == "[Errno 2] No such file or directory":
-                    reason = "Не удалось запустить сервис"
-
                 ServicesControl.update_status(
                     svc,
                     status=ServiceStatus.UNHEALTHY,
