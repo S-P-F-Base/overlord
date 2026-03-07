@@ -11,6 +11,35 @@ CHECK_INTERVAL = 15.0
 TIMEOUT = 5.0
 
 
+def normalize_connect_error(exc: Exception) -> str:
+    cause = getattr(exc, "__cause__", None)
+    context = getattr(exc, "__context__", None)
+
+    for err in (cause, context, exc):
+        if isinstance(err, OSError):
+            if err.errno == errno.ENOENT:
+                return "Не удалось запустить сервис"
+
+            if err.errno == errno.ECONNREFUSED:
+                return "Сервис не принимает соединение"
+
+            if err.errno == errno.EACCES:
+                return "Нет доступа к сокету"
+
+    text = str(exc)
+
+    if "[Errno 2]" in text or "No such file or directory" in text:
+        return "Не удалось запустить сервис"
+
+    if "[Errno 111]" in text or "Connection refused" in text:
+        return "Сервис не принимает соединение"
+
+    if "[Errno 13]" in text or "Permission denied" in text:
+        return "Нет доступа к сокету"
+
+    return text
+
+
 async def poll_services() -> None:
     while True:
         for svc in ServicesControl.get_all_services():
@@ -52,18 +81,10 @@ async def poll_services() -> None:
                     )
 
             except httpx.ConnectError as exc:
-                err = getattr(exc.__cause__, "errno", None)
-
-                if err == errno.ENOENT:
-                    reason = "Не удалось запустить сервис"
-
-                else:
-                    reason = str(exc)
-
                 ServicesControl.update_status(
                     svc,
                     status=ServiceStatus.UNHEALTHY,
-                    reason=reason,
+                    reason=normalize_connect_error(exc),
                     latency=None,
                 )
 
