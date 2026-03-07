@@ -52,7 +52,7 @@ class ENVs:
             for key in svc.env_vars:
                 value = secrets.get(key.lower())
                 if value is not None:
-                    lines.append(f"{key}={value}")
+                    lines.append(f"{key.lower()}={value}")
 
             if not lines:
                 continue

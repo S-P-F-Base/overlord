@@ -22,7 +22,7 @@ class ServicesControl:
             sock=Path("/run/spf/game_api.sock"),
             public=True,
             maintenance_file=Path("/root/spf/game-api/MAINTENANCE"),
-            env_vars=["steam_api"],
+            env_vars=["STEAM_API"],
         ),
         Service(
             id="dbs",
