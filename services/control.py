@@ -40,7 +40,7 @@ class ServicesControl:
             sock=Path("/run/spf/auth.sock"),
             public=True,
             maintenance_file=Path("/root/spf/auth/MAINTENANCE"),
-            env_vars=["DISCORD_APP", "STEAM_API"],
+            env_vars=["DISCORD_APP", "STEAM_API", "BOT_TOKEN", "JWT_KEY"],
         ),
         Service(
             id="user",
@@ -49,7 +49,7 @@ class ServicesControl:
             sock=Path("/run/spf/user.sock"),
             public=True,
             maintenance_file=Path("/root/spf/user/MAINTENANCE"),
-            env_vars=[],
+            env_vars=["JWT_KEY"],
         ),
         Service(
             id="monolith",
