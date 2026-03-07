@@ -34,6 +34,15 @@ class ServicesControl:
             env_vars=[],
         ),
         Service(
+            id="auth",
+            name="API авторизации",
+            path="/auth",
+            sock=Path("/run/spf/auth.sock"),
+            public=True,
+            maintenance_file=Path("/root/spf/auth/MAINTENANCE"),
+            env_vars=["DISCORD_APP", "STEAM_API"],
+        ),
+        Service(
             id="user",
             name="Парель игрока",
             path="/user",
