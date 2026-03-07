@@ -52,11 +52,14 @@ async def poll_services() -> None:
                     )
 
             except httpx.ConnectError as exc:
-                reason = (
-                    "Не удалось запустить сервис"
-                    if getattr(exc, "errno", None) == errno.ENOENT
-                    else str(exc)
-                )
+                err = getattr(exc.__cause__, "errno", None)
+
+                if err == errno.ENOENT:
+                    reason = "Не удалось запустить сервис"
+
+                else:
+                    reason = str(exc)
+
                 ServicesControl.update_status(
                     svc,
                     status=ServiceStatus.UNHEALTHY,
