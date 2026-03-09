@@ -43,6 +43,15 @@ class ServicesControl:
             env_vars=["DISCORD_APP", "STEAM_API", "BOT_TOKEN", "JWT_KEY"],
         ),
         Service(
+            id="ds-bot",
+            name="DS Bot",
+            path="/ds-bot",
+            sock=Path("/run/spf/ds-bot.sock"),
+            public=False,
+            maintenance_file=Path("/root/spf/ds-bot/MAINTENANCE"),
+            env_vars=["BOT_TOKEN"],
+        ),
+        Service(
             id="user",
             name="Парель игрока",
             path="/user",
