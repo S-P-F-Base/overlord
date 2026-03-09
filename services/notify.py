@@ -15,7 +15,7 @@ async def notify_one(svc):
             transport=transport,
             timeout=TIMEOUT,
         ) as client:
-            resp = await client.post("http://service/notify")
+            resp = await client.post("http://service/notify", json={})
             return resp.status_code in (200, 404)
 
     except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPError):
