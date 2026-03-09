@@ -40,7 +40,7 @@ class ServicesControl:
             sock=Path("/run/spf/auth.sock"),
             public=True,
             maintenance_file=Path("/root/spf/auth/MAINTENANCE"),
-            env_vars=["DISCORD_APP", "STEAM_API", "BOT_TOKEN", "JWT_KEY"],
+            env_vars=["DISCORD_APP", "STEAM_API", "DISCORD_BOT", "JWT_KEY"],
         ),
         Service(
             id="ds_bot",
@@ -49,7 +49,7 @@ class ServicesControl:
             sock=Path("/run/spf/ds-bot.sock"),
             public=False,
             maintenance_file=Path("/root/spf/ds-bot/MAINTENANCE"),
-            env_vars=["BOT_TOKEN"],
+            env_vars=["DISCORD_BOT"],
         ),
         Service(
             id="user",
