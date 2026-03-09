@@ -49,7 +49,7 @@ class ServicesControl:
             sock=Path("/run/spf/ds-bot.sock"),
             public=False,
             maintenance_file=Path("/root/spf/ds-bot/MAINTENANCE"),
-            env_vars=["DISCORD_BOT"],
+            env_vars=["DISCORD_BOT", "STEAM_API"],
         ),
         Service(
             id="user",

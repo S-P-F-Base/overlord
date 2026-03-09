@@ -10,12 +10,13 @@ from router.internal import router as internal_router
 from router.overlord import router as overlord_router
 from router.proxy import router as proxy_router
 from router.static_accel import router as static_accel_router
-from services import poll_services
+from services import notify_services_worker, poll_services_worker
 
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
-    task = asyncio.create_task(poll_services())
+    poll_task = asyncio.create_task(poll_services_worker())
+    notify_task = asyncio.create_task(notify_services_worker())
 
     Constants.load()
     ENVs.generate()
@@ -24,9 +25,11 @@ async def lifespan(app: FastAPI):
         yield
 
     finally:
-        task.cancel()
+        poll_task.cancel()
+        notify_task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
-            await task
+            await poll_task
+            await notify_task
 
 
 app = FastAPI(

@@ -40,7 +40,7 @@ def normalize_connect_error(exc: Exception) -> str:
     return text
 
 
-async def poll_services() -> None:
+async def poll_services_worker() -> None:
     while True:
         for svc in ServicesControl.get_all_services():
             if svc.is_in_maintenance():
