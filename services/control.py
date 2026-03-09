@@ -43,7 +43,7 @@ class ServicesControl:
             env_vars=["DISCORD_APP", "STEAM_API", "BOT_TOKEN", "JWT_KEY"],
         ),
         Service(
-            id="ds-bot",
+            id="ds_bot",
             name="DS Bot",
             path="/ds-bot",
             sock=Path("/run/spf/ds-bot.sock"),
