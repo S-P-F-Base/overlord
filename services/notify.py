@@ -2,13 +2,13 @@ import asyncio
 
 import httpx
 
-from services import ServicesControl
+from .registry import Service, ServicesRegistry
 
 TIMEOUT = 5.0
 RETRY_INTERVAL = 5.0
 
 
-async def notify_one(svc):
+async def notify_one(svc: Service) -> bool:
     try:
         transport = httpx.AsyncHTTPTransport(uds=str(svc.sock))
         async with httpx.AsyncClient(
@@ -21,20 +21,24 @@ async def notify_one(svc):
     except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPError):
         return False
 
+    except Exception:
+        return False
 
-async def notify_services_worker():
+
+async def notify_services_worker() -> None:
     await asyncio.sleep(1)
 
-    pending = {svc.name: svc for svc in ServicesControl.get_all_services()}
+    pending = {svc.id: svc for svc in ServicesRegistry.get_all()}
 
     while pending:
-        tasks = {
-            name: asyncio.create_task(notify_one(svc)) for name, svc in pending.items()
-        }
+        batch = list(pending.items())
+        results = await asyncio.gather(*(notify_one(svc) for _, svc in batch))
 
-        for name, task in tasks.items():
-            if await task:
-                pending.pop(name, None)
+        pending = {
+            svc_id: svc
+            for (svc_id, svc), delivered in zip(batch, results)
+            if not delivered
+        }
 
         if pending:
             await asyncio.sleep(RETRY_INTERVAL)

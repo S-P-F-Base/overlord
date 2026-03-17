@@ -1,8 +1,7 @@
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Response
 
-from services import Service, ServicesControl
-from services.types import ServiceStatus
+from services import Service, ServicesRegistry, ServiceStatus
 from template_env import templates
 
 router = APIRouter()
@@ -17,10 +16,17 @@ HOP_BY_HOP_HEADERS: set[str] = {
     "transfer-encoding",
     "upgrade",
 }
+STATUS_DISPATCH: dict[ServiceStatus | None, tuple[int, str]] = {
+    ServiceStatus.MAINTENANCE: (503, "Сервис на техническом обслуживании"),
+    ServiceStatus.TIMEOUT: (504, "Сервис не ответил вовремя"),
+    ServiceStatus.UNHEALTHY: (502, "Сервис недоступен"),
+    ServiceStatus.STARTING: (503, "Сервис запускается"),
+    None: (500, "Неизвестное состояние сервиса"),
+}
 
 
 def wants_html(request: Request) -> bool:
-    return "text/html" in request.headers.get("accept", "")
+    return "text/html" in request.headers.get("accept", "").lower()
 
 
 async def forward_request(
@@ -46,15 +52,7 @@ async def forward_request(
         )
 
     if service.status is not ServiceStatus.HEALTHY:
-        dispatch = {
-            ServiceStatus.MAINTENANCE: (503, "Сервис на техническом обслуживании"),
-            ServiceStatus.TIMEOUT: (504, "Сервис не ответил вовремя"),
-            ServiceStatus.UNHEALTHY: (502, "Сервис недоступен"),
-            ServiceStatus.STARTING: (503, "Сервис запускается"),
-            None: (500, "Неизвестное состояние сервиса"),
-        }
-
-        code, text = dispatch.get(
+        code, text = STATUS_DISPATCH.get(
             service.status,
             (500, "Неизвестное состояние сервиса"),
         )
@@ -105,7 +103,7 @@ async def forward_request(
 
 @router.api_route("/{full_path:path}", methods=["GET", "POST"])
 async def proxy(full_path: str, request: Request):
-    service = ServicesControl.match("/" + full_path)
+    service = ServicesRegistry.match("/" + full_path)
     if service is None or not service.public:
         raise HTTPException(status_code=404)
 

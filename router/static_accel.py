@@ -3,7 +3,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
-from services import ServicesControl
+from services import Service, ServicesRegistry
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ async def overlord_static(path: str):
     return resp
 
 
-def accel_static(service, path: str) -> Response:
+def accel_static(service: Service | None, path: str) -> Response:
     if not service or not service.public:
         raise HTTPException(404)
 
@@ -30,11 +30,11 @@ def accel_static(service, path: str) -> Response:
 
 @router.get("/static/{path:path}")
 async def monolith_static(path: str):
-    service = ServicesControl.get_by_path("/")
+    service = ServicesRegistry.get_by_path("/")
     return accel_static(service, path)
 
 
 @router.get("/{svc}/static/{path:path}")
 async def service_static(svc: str, path: str):
-    service = ServicesControl.get_by_path(f"/{svc}")
+    service = ServicesRegistry.get_by_path(f"/{svc}")
     return accel_static(service, path)

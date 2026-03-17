@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
-from services import ServicesControl, ServiceStatus
+from services import ServicesRegistry, ServiceStatus
 from template_env import templates
 
 router = APIRouter()
@@ -11,6 +11,7 @@ _STATUS_DICT = {
     ServiceStatus.HEALTHY: {"text": "ONLINE", "class": "ok"},
     ServiceStatus.UNHEALTHY: {"text": "OFFLINE", "class": "bad"},
     ServiceStatus.TIMEOUT: {"text": "TIMEOUT", "class": "warn"},
+    ServiceStatus.STARTING: {"text": "STARTING", "class": "warn"},
     None: {"text": "UNKNOWN", "class": "muted"},
 }
 
@@ -25,7 +26,7 @@ async def overlord_page(request: Request):
             "status": _STATUS_DICT.get(s.status),
             "reason": s.reason,
         }
-        for s in ServicesControl.get_all_services()
+        for s in ServicesRegistry.get_all()
     ]
 
     return templates.TemplateResponse(

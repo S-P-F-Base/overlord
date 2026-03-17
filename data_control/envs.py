@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from services import ServicesControl
+from services import ServicesRegistry
 
 
 class ENVs:
@@ -43,7 +43,7 @@ class ENVs:
         cls.RUNTIME_ENV_DIR.mkdir(parents=True, exist_ok=True)
         cls._clear_runtime_dir()
 
-        for svc in ServicesControl.get_all_services():
+        for svc in ServicesRegistry.get_all():
             if not svc.env_vars:
                 continue
 

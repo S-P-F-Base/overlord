@@ -1,10 +1,48 @@
 import time
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 
-from .types import Service, ServiceStatus
+
+class ServiceStatus(Enum):
+    HEALTHY = 0  # systemd + /ping ок
+    MAINTENANCE = 1  # сервис в техобслуживании
+    TIMEOUT = 2  # за N секунд не ответил
+    UNHEALTHY = 3  # systemd жив, /ping плохой
+    STARTING = 4  # systemd запущен, но сервис ещё поднимается
+
+    @property
+    def is_usable(self) -> bool:
+        return self is ServiceStatus.HEALTHY
 
 
-class ServicesControl:
+@dataclass(slots=True)
+class Service:
+    id: str
+    name: str
+    path: str
+    sock: Path
+    public: bool
+    maintenance_file: Path
+
+    env_vars: list[str] = field(default_factory=list)
+
+    status: ServiceStatus = ServiceStatus.STARTING
+    reason: str | None = None
+    latency: float | None = None
+    last_check: float | None = None
+
+    def matches(self, request_path: str) -> bool:
+        if self.path == "/":
+            return True
+
+        return request_path == self.path or request_path.startswith(self.path + "/")
+
+    def is_in_maintenance(self) -> bool:
+        return self.maintenance_file.exists()
+
+
+class ServicesRegistry:
     _services: list[Service] = [
         Service(
             id="wiki",
@@ -70,44 +108,54 @@ class ServicesControl:
             env_vars=[],
         ),
     ]
+    _by_id: dict[str, Service] = {svc.id: svc for svc in _services}
+    _by_path: dict[str, Service] = {svc.path: svc for svc in _services}
+    _default_service: Service | None = _by_path.get("/")
+    _path_sorted_services: list[Service] = sorted(
+        (svc for svc in _services if svc.path != "/"),
+        key=lambda svc: len(svc.path),
+        reverse=True,
+    )
+
+    @staticmethod
+    def _normalize_path(path: str) -> str | None:
+        if not path:
+            return None
+
+        normalized = path if path.startswith("/") else f"/{path}"
+
+        if len(normalized) > 1:
+            normalized = normalized.rstrip("/")
+
+        return normalized
 
     @classmethod
-    def get_all_services(cls) -> list[Service]:
+    def get_all(cls) -> list[Service]:
         return cls._services.copy()
 
     @classmethod
     def get_by_path(cls, path: str) -> Service | None:
-        if not path.startswith("/"):
+        normalized = cls._normalize_path(path)
+        if normalized is None:
             return None
 
-        for svc in cls._services:
-            if svc.path == path:
-                return svc
-
-        return None
+        return cls._by_path.get(normalized)
 
     @classmethod
     def get_by_id(cls, id: str) -> Service | None:
-        for svc in cls._services:
-            if svc.id == id:
-                return svc
-
-        return None
+        return cls._by_id.get(id)
 
     @classmethod
     def match(cls, request_path: str) -> Service | None:
-        if not request_path.startswith("/"):
-            request_path = "/" + request_path
+        normalized = cls._normalize_path(request_path)
+        if normalized is None:
+            return cls._default_service
 
-        for svc in cls._services:
-            if svc.path != "/" and svc.matches(request_path):
+        for svc in cls._path_sorted_services:
+            if svc.matches(normalized):
                 return svc
 
-        for svc in cls._services:
-            if svc.path == "/":
-                return svc
-
-        return None
+        return cls._default_service
 
     @classmethod
     def update_status(
