@@ -6,16 +6,18 @@ from template_env import templates
 
 router = APIRouter()
 
-HOP_BY_HOP_HEADERS: set[str] = {
-    "connection",
-    "keep-alive",
-    "proxy-authenticate",
-    "proxy-authorization",
-    "te",
-    "trailer",
-    "transfer-encoding",
-    "upgrade",
-}
+HOP_BY_HOP_HEADERS: frozenset[str] = frozenset(
+    {
+        "connection",
+        "keep-alive",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailer",
+        "transfer-encoding",
+        "upgrade",
+    }
+)
 STATUS_DISPATCH: dict[ServiceStatus | None, tuple[int, str]] = {
     ServiceStatus.MAINTENANCE: (503, "Сервис на техническом обслуживании"),
     ServiceStatus.TIMEOUT: (504, "Сервис не ответил вовремя"),
@@ -118,9 +120,9 @@ async def proxy(full_path: str, request: Request):
     except HTTPException as exc:
         if is_wants_html and exc.status_code in {403, 404, 500, 502, 503}:
             return templates.TemplateResponse(
+                request,
                 f"errors/{exc.status_code}.html",
                 {
-                    "request": request,
                     "service": service,
                     "reason": exc.detail,
                 },
@@ -149,9 +151,9 @@ async def proxy(full_path: str, request: Request):
             pass
 
         return templates.TemplateResponse(
+            request,
             f"errors/{resp.status_code}.html",
             {
-                "request": request,
                 "service": service,
                 "path": request.url.path,
                 "reason": reason,

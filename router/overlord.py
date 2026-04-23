@@ -30,9 +30,7 @@ async def overlord_page(request: Request):
     ]
 
     return templates.TemplateResponse(
+        request,
         "status.html",
-        {
-            "request": request,
-            "services": services_view,
-        },
+        {"services": services_view},
     )
