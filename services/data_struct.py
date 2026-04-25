@@ -13,7 +13,6 @@ class ServiceUnit:
 
     id: str
     name: str
-    desc: str
     workers: int
 
     path: str

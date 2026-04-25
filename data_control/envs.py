@@ -1,20 +1,17 @@
-from pathlib import Path
+from services import LIST_OF_SERVICES
 
-from services import ServicesRegistry
+from .constants import Constants
 
 
 class ENVs:
-    SECRETS_FILE = Path("/root/spf/overlord/.env")
-    RUNTIME_ENV_DIR = Path("/run/spf/env")
-
     @classmethod
     def _load_secrets(cls) -> dict[str, str]:
         data: dict[str, str] = {}
 
-        if not cls.SECRETS_FILE.exists():
+        if not Constants.OVER_ENV.exists():
             return data
 
-        for line in cls.SECRETS_FILE.read_text(encoding="utf-8").splitlines():
+        for line in Constants.OVER_ENV.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
@@ -28,22 +25,12 @@ class ENVs:
         return data
 
     @classmethod
-    def _clear_runtime_dir(cls) -> None:
-        if not cls.RUNTIME_ENV_DIR.exists():
-            return
-
-        for path in cls.RUNTIME_ENV_DIR.iterdir():
-            if path.is_file():
-                path.unlink()
-
-    @classmethod
     def generate(cls) -> None:
         secrets = cls._load_secrets()
 
-        cls.RUNTIME_ENV_DIR.mkdir(parents=True, exist_ok=True)
-        cls._clear_runtime_dir()
+        Constants.RUNTIME_ENV_DIR.mkdir(parents=True, exist_ok=True)
 
-        for svc in ServicesRegistry.get_all():
+        for svc in LIST_OF_SERVICES:
             if not svc.env_vars:
                 continue
 
@@ -57,6 +44,6 @@ class ENVs:
             if not lines:
                 continue
 
-            env_path = cls.RUNTIME_ENV_DIR / f"{svc.id}.env"
+            env_path = Constants.RUNTIME_ENV_DIR / f"{svc.id}.env"
             env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
             env_path.chmod(0o600)

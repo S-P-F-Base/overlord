@@ -3,8 +3,6 @@ from urllib.parse import quote
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
-from services import Service, ServicesRegistry
-
 router = APIRouter()
 
 

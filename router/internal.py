@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
 from data_control import Constants
-from services import ServicesRegistry
 
 router = APIRouter()
 
