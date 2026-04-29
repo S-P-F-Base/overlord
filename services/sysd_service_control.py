@@ -25,7 +25,6 @@ class SystemdServicesControl:
         # setup dirs for safe
         Constants.SERVICES_FILE_PATH.mkdir(parents=True, exist_ok=True)
         RUN_DIR.mkdir(parents=True, exist_ok=True)
-        # end
 
         code_path = Constants.SERVICES_REPO_PATH / unit.id
         env_unit_path = (
@@ -34,7 +33,8 @@ class SystemdServicesControl:
             else ""
         )
 
-        payload = f"""[Unit]
+        payload = f"""\
+[Unit]
 Description={unit.name}
 
 [Service]
