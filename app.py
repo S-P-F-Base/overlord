@@ -1,22 +1,18 @@
-import asyncio
 import contextlib
-import os
+import platform
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from data_control import Constants, ENVs
-from router.internal import router as internal_router
 from router.overlord import router as overlord_router
-from router.proxy import router as proxy_router
-from router.static_accel import router as static_accel_router
-from services import notify_services_worker, poll_services_worker
+from template_env import LOCAL_RUN
 
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
-    poll_task = asyncio.create_task(poll_services_worker())
-    notify_task = asyncio.create_task(notify_services_worker())
+    if platform.system() != "Linux":
+        raise RuntimeError("Only linux support for overlord for now")
 
     Constants.load()
     ENVs.generate()
@@ -25,11 +21,7 @@ async def lifespan(app: FastAPI):
         yield
 
     finally:
-        poll_task.cancel()
-        notify_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await poll_task
-            await notify_task
+        pass
 
 
 app = FastAPI(
@@ -39,7 +31,7 @@ app = FastAPI(
     openapi_url=None,
 )
 
-if os.getenv("FASTAPISTATIC") == "1":
+if LOCAL_RUN:
     app.mount(
         "/static",
         StaticFiles(directory="static"),
@@ -47,6 +39,3 @@ if os.getenv("FASTAPISTATIC") == "1":
     )
 
 app.include_router(overlord_router)
-app.include_router(internal_router)
-app.include_router(static_accel_router)
-app.include_router(proxy_router)
