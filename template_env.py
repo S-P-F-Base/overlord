@@ -15,7 +15,7 @@ def static_with_version(file: str) -> str:
     static_path = STATIC_DIR / file
     v = int(static_path.stat().st_mtime) if static_path.exists() else 0
 
-    if not LOCAL_RUN:
+    if LOCAL_RUN:
         return f"/static/{file}?v={v}"
 
     else:
